@@ -23,22 +23,17 @@ from pyspark.sql.functions import udf
 from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorAssembler,StandardScaler
 from pyspark.ml import Pipeline
 
+# Create a Spark session
 spark=SparkSession.builder \
     .master ("local[*]")\
-    .appName("part3")\
+    .appName("correlation")\
     .getOrCreate()
-```
-
-```{python}
-# Create a Spark session
-spark = SparkSession.builder.appName("corr").getOrCreate()
 
 # Get the Spark context
 sc = spark.sparkContext
 
 # Create a SQL context
 sqlContext = SQLContext(sc)
-
 ```
 
 ```{python}
@@ -52,6 +47,112 @@ df_diabetes=spark.read \
 print("There are", df_diabetes.count(), "rows", len(df_diabetes.columns),
       "columns in the data.") 
 ```
+
+**Exploring the Data**
+
+Before diving into correlation analysis, let's take a quick look at the dataset:
+
+```{python}
+my_columns = ["Outcome", "Glucose", "BloodPressure","BMI"]
+
+df_diabetes.select(my_columns).show(5)
+```
+
+
+**Pearson Correlation**
+
+`Pearson` correlation, named after Karl Pearson, is a statistical measure that quantifies the strength and direction of a linear relationship between two continuous variables. It assesses how well the relationship between the two variables can be described by a straight line. The Pearson correlation coefficient, often denoted by \( r \), ranges from -1 to 1, where:
+
+- \( r = 1 \): Perfect positive linear correlation.
+- \( r = -1 \): Perfect negative (inverse) linear correlation.
+- \( r = 0 \): No linear correlation.
+
+**Key Points:*
+
+1. **Linearity:** Pearson correlation measures the linear relationship between two variables. If the relationship is nonlinear, Pearson correlation may not accurately reflect the strength and direction of the association.
+
+2. **Calculation:** The Pearson correlation coefficient is calculated as the covariance of the two variables divided by the product of their standard deviations:
+
+   \[ r = \frac{\text{cov}(X, Y)}{\sigma_X \cdot \sigma_Y} \]
+
+   where \(\text{cov}(X, Y)\) is the covariance between variables \(X\) and \(Y\), and \(\sigma_X\) and \(\sigma_Y\) are their respective standard deviations.
+
+3. **Strength of Correlation:** The absolute value of \( r \) indicates the strength of the correlation. A value close to 1 suggests a strong linear correlation, while a value close to 0 indicates a weak or no linear correlation.
+
+4. **Direction of Correlation:** The sign of \( r \) (+ or -) indicates the direction of the correlation. If \( r > 0 \), it indicates a positive correlation (as one variable increases, the other tends to increase). If \( r < 0 \), it indicates a negative correlation (as one variable increases, the other tends to decrease).
+
+5. **Assumptions:** Pearson correlation assumes that the relationship between the variables is linear and that the data is normally distributed. If these assumptions are violated, the reliability of Pearson correlation results may be compromised.
+
+6. **Use Cases:** Pearson correlation is widely used in various fields, including economics, biology, psychology, and many others, to analyze the degree and direction of association between two continuous variables.
+
+It's important to note that while Pearson correlation is a powerful tool for linear relationships, it might not capture complex or nonlinear associations. In such cases, other correlation measures like Spearman correlation (for monotonic relationships) or more advanced techniques may be considered.
+
+
+```{python}
+from pyspark.ml.feature import VectorAssembler
+
+# Selecting relevant features
+selected_features = ["Glucose", "BloodPressure", "BMI"]
+
+# Assemble features into a vector
+assembler = VectorAssembler(inputCols=selected_features, outputCol="features")
+df_diabetes_vectorized = assembler.transform(df_diabetes.select(selected_features))
+```
+
+
+Calculate Correlation Coefficients
+
+Now, let's calculate the Pearson correlation matrix using PySpark:
+
+```{python}
+from pyspark.ml.stat import Correlation
+
+# Calculate Pearson correlation matrix
+pearson_corr_matrix = Correlation.corr(df_diabetes_vectorized, 
+                                      "features", 
+                                      method="pearson").head()
+
+pearson_corr_matrix
+```
+
+```{python}
+Correlation.corr(df_diabetes_vectorized,
+                "features", 
+                method="pearson").head()[0]
+```
+
+
+
+```{python}
+# Extract the correlation matrix as a DenseMatrix
+corr_values = pearson_corr_matrix[0].toArray()
+corr_values
+```
+
+
+**Spearman Correlation**
+
+Spearman correlation, named after Charles Spearman, is a statistical measure that assesses the strength and direction of `monotonic` relationships between two variables. Unlike `Pearson` correlation, which measures linear relationships, Spearman correlation focuses on the `monotonicity` of the relationship, whether it is increasing or decreasing.
+
+Key points about `Spearman` correlation:
+
+1. **Monotonic Relationship:** Spearman correlation is based on the ranks of the data rather than the actual values. It looks at whether, when one variable increases, the other tends to also increase (and vice versa) in a monotonic fashion. It does not assume a linear relationship.
+
+2. **Ranking:** The data for each variable is ranked, and the correlation is calculated based on the ranks. If the variables have a perfect `monotonic` relationship, the `Spearman` correlation will be 1. If one variable tends to increase as the other decreases, the correlation will be -1.
+Calculation: The Spearman correlation coefficient ($\rho$) is calculated as follows:
+
+$$\rho = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}$$ where $d_i$ is the difference between the ranks of corresponding values for the two variables, and $n$ is the number of data points.
+
+3. **Strength of Correlation:** As with `Pearson` correlation, the absolute value of the `Spearman` correlation coefficient indicates the strength of the relationship. A coefficient close to 1 or -1 suggests a strong monotonic relationship, while a coefficient close to 0 suggests a weak or no monotonic relationship.
+
+4. **Use Cases:** `Spearman` correlation is particularly useful when dealing with ordinal or ranked data, as it doesn't rely on the assumption of normality. It's commonly used in social sciences, finance, and any other fields where the relationship between variables might be nonlinear.
+
+5. **Ranking Ties:** In cases where there are tied values (two or more identical values) in the data, special methods are used to handle ties in the ranking process.
+
+6. **Spearman correlation** is a valuable tool when the assumptions of `linear` relationships are not met, or when dealing with data where the exact values are less important than their relative order. It provides a robust measure of association between variables without requiring a specific functional form for the relationship.
+
+
+
 
 #### Custom Correlation Method
 
@@ -83,34 +184,7 @@ def correlation_df(df, target_var, feature_cols, method):
 
 ```
 
-Lets print some selected columns.
 
-```{python}
-my_columns = ["Outcome", "Glucose", "BloodPressure","BMI"]
-
-df_diabetes.select(my_columns).show(4)
-```
-
-**Spearman Correlation**
-
-Spearman correlation, named after Charles Spearman, is a statistical measure that assesses the strength and direction of `monotonic` relationships between two variables. Unlike `Pearson` correlation, which measures linear relationships, Spearman correlation focuses on the `monotonicity` of the relationship, whether it is increasing or decreasing.
-
-Key points about `Spearman` correlation:
-
-1. **Monotonic Relationship:** Spearman correlation is based on the ranks of the data rather than the actual values. It looks at whether, when one variable increases, the other tends to also increase (and vice versa) in a monotonic fashion. It does not assume a linear relationship.
-
-2. **Ranking:** The data for each variable is ranked, and the correlation is calculated based on the ranks. If the variables have a perfect `monotonic` relationship, the `Spearman` correlation will be 1. If one variable tends to increase as the other decreases, the correlation will be -1.
-Calculation: The Spearman correlation coefficient ($\rho$) is calculated as follows:
-
-$$\rho = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}$$ where $d_i$ is the difference between the ranks of corresponding values for the two variables, and $n$ is the number of data points.
-
-3. **Strength of Correlation:** As with `Pearson` correlation, the absolute value of the `Spearman` correlation coefficient indicates the strength of the relationship. A coefficient close to 1 or -1 suggests a strong monotonic relationship, while a coefficient close to 0 suggests a weak or no monotonic relationship.
-
-4. **Use Cases:** `Spearman` correlation is particularly useful when dealing with ordinal or ranked data, as it doesn't rely on the assumption of normality. It's commonly used in social sciences, finance, and any other fields where the relationship between variables might be nonlinear.
-
-5. **Ranking Ties:** In cases where there are tied values (two or more identical values) in the data, special methods are used to handle ties in the ranking process.
-
-6. **Spearman correlation** is a valuable tool when the assumptions of `linear` relationships are not met, or when dealing with data where the exact values are less important than their relative order. It provides a robust measure of association between variables without requiring a specific functional form for the relationship.
 
 ```{python}
 target = 'Outcome'
@@ -124,31 +198,21 @@ df.show()
 ```
 
 
-**Pearson Correlation**
+```{python}
+target = 'Outcome'
+inputs = ["Glucose", "BloodPressure","BMI"]
 
-`Pearson` correlation, named after Karl Pearson, is a statistical measure that quantifies the strength and direction of a linear relationship between two continuous variables. It assesses how well the relationship between the two variables can be described by a straight line. The Pearson correlation coefficient, often denoted by \( r \), ranges from -1 to 1, where:
+df_p = correlation_df(df = df_diabetes, 
+                    target_var = target, 
+                    feature_cols = inputs,
+                    method = 'pearson')
+                    
+df_p.show()
+```
 
-- \( r = 1 \): Perfect positive linear correlation.
-- \( r = -1 \): Perfect negative (inverse) linear correlation.
-- \( r = 0 \): No linear correlation.
-
-**Key Points:*
-
-1. **Linearity:** Pearson correlation measures the linear relationship between two variables. If the relationship is nonlinear, Pearson correlation may not accurately reflect the strength and direction of the association.
-
-2. **Calculation:** The Pearson correlation coefficient is calculated as the covariance of the two variables divided by the product of their standard deviations:
-
-   \[ r = \frac{\text{cov}(X, Y)}{\sigma_X \cdot \sigma_Y} \]
-
-   where \(\text{cov}(X, Y)\) is the covariance between variables \(X\) and \(Y\), and \(\sigma_X\) and \(\sigma_Y\) are their respective standard deviations.
-
-3. **Strength of Correlation:** The absolute value of \( r \) indicates the strength of the correlation. A value close to 1 suggests a strong linear correlation, while a value close to 0 indicates a weak or no linear correlation.
-
-4. **Direction of Correlation:** The sign of \( r \) (+ or -) indicates the direction of the correlation. If \( r > 0 \), it indicates a positive correlation (as one variable increases, the other tends to increase). If \( r < 0 \), it indicates a negative correlation (as one variable increases, the other tends to decrease).
-
-5. **Assumptions:** Pearson correlation assumes that the relationship between the variables is linear and that the data is normally distributed. If these assumptions are violated, the reliability of Pearson correlation results may be compromised.
-
-6. **Use Cases:** Pearson correlation is widely used in various fields, including economics, biology, psychology, and many others, to analyze the degree and direction of association between two continuous variables.
-
-It's important to note that while Pearson correlation is a powerful tool for linear relationships, it might not capture complex or nonlinear associations. In such cases, other correlation measures like Spearman correlation (for monotonic relationships) or more advanced techniques may be considered.
+```{python}
+# Convert Spark DataFrame to Pandas DataFrame and sort by 'cola' in descending order
+pandas_df = df_p.toPandas().sort_values(by='correlation', ascending=False)
+pandas_df
+```
 

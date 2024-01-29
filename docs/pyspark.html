@@ -189,60 +189,34 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-10"><a href="pyspark.html#cb2-10" tabindex="-1"></a><span class="im">from</span> pyspark.ml.feature <span class="im">import</span> OneHotEncoder, StringIndexer, VectorAssembler,StandardScaler</span>
 <span id="cb2-11"><a href="pyspark.html#cb2-11" tabindex="-1"></a><span class="im">from</span> pyspark.ml <span class="im">import</span> Pipeline</span>
 <span id="cb2-12"><a href="pyspark.html#cb2-12" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="pyspark.html#cb2-13" tabindex="-1"></a>spark<span class="op">=</span>SparkSession.builder <span class="op">\</span></span>
-<span id="cb2-14"><a href="pyspark.html#cb2-14" tabindex="-1"></a>    .master (<span class="st">&quot;local[*]&quot;</span>)<span class="op">\</span></span>
-<span id="cb2-15"><a href="pyspark.html#cb2-15" tabindex="-1"></a>    .appName(<span class="st">&quot;part3&quot;</span>)<span class="op">\</span></span>
-<span id="cb2-16"><a href="pyspark.html#cb2-16" tabindex="-1"></a>    .getOrCreate()</span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="pyspark.html#cb3-1" tabindex="-1"></a><span class="co"># Create a Spark session</span></span>
-<span id="cb3-2"><a href="pyspark.html#cb3-2" tabindex="-1"></a>spark <span class="op">=</span> SparkSession.builder.appName(<span class="st">&quot;corr&quot;</span>).getOrCreate()</span>
-<span id="cb3-3"><a href="pyspark.html#cb3-3" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="pyspark.html#cb3-4" tabindex="-1"></a><span class="co"># Get the Spark context</span></span>
-<span id="cb3-5"><a href="pyspark.html#cb3-5" tabindex="-1"></a>sc <span class="op">=</span> spark.sparkContext</span>
-<span id="cb3-6"><a href="pyspark.html#cb3-6" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="pyspark.html#cb3-7" tabindex="-1"></a><span class="co"># Create a SQL context</span></span>
-<span id="cb3-8"><a href="pyspark.html#cb3-8" tabindex="-1"></a>sqlContext <span class="op">=</span> SQLContext(sc)</span></code></pre></div>
+<span id="cb2-13"><a href="pyspark.html#cb2-13" tabindex="-1"></a><span class="co"># Create a Spark session</span></span>
+<span id="cb2-14"><a href="pyspark.html#cb2-14" tabindex="-1"></a>spark<span class="op">=</span>SparkSession.builder <span class="op">\</span></span>
+<span id="cb2-15"><a href="pyspark.html#cb2-15" tabindex="-1"></a>    .master (<span class="st">&quot;local[*]&quot;</span>)<span class="op">\</span></span>
+<span id="cb2-16"><a href="pyspark.html#cb2-16" tabindex="-1"></a>    .appName(<span class="st">&quot;correlation&quot;</span>)<span class="op">\</span></span>
+<span id="cb2-17"><a href="pyspark.html#cb2-17" tabindex="-1"></a>    .getOrCreate()</span>
+<span id="cb2-18"><a href="pyspark.html#cb2-18" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="pyspark.html#cb2-19" tabindex="-1"></a><span class="co"># Get the Spark context</span></span>
+<span id="cb2-20"><a href="pyspark.html#cb2-20" tabindex="-1"></a>sc <span class="op">=</span> spark.sparkContext</span>
+<span id="cb2-21"><a href="pyspark.html#cb2-21" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="pyspark.html#cb2-22" tabindex="-1"></a><span class="co"># Create a SQL context</span></span>
+<span id="cb2-23"><a href="pyspark.html#cb2-23" tabindex="-1"></a>sqlContext <span class="op">=</span> SQLContext(sc)</span></code></pre></div>
 <pre><code>## /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/pyspark/sql/context.py:112: FutureWarning: Deprecated in 3.0.0. Use SparkSession.builder.getOrCreate() instead.
 ##   warnings.warn(</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="pyspark.html#cb5-1" tabindex="-1"></a>data_path <span class="op">=</span> <span class="st">&#39;data/diabetes.csv&#39;</span></span>
-<span id="cb5-2"><a href="pyspark.html#cb5-2" tabindex="-1"></a>df_diabetes<span class="op">=</span>spark.read <span class="op">\</span></span>
-<span id="cb5-3"><a href="pyspark.html#cb5-3" tabindex="-1"></a>      .option(<span class="st">&quot;header&quot;</span>,<span class="st">&quot;True&quot;</span>)<span class="op">\</span></span>
-<span id="cb5-4"><a href="pyspark.html#cb5-4" tabindex="-1"></a>      .option(<span class="st">&quot;inferSchema&quot;</span>,<span class="st">&quot;True&quot;</span>)<span class="op">\</span></span>
-<span id="cb5-5"><a href="pyspark.html#cb5-5" tabindex="-1"></a>      .option(<span class="st">&quot;sep&quot;</span>,<span class="st">&quot;,&quot;</span>)<span class="op">\</span></span>
-<span id="cb5-6"><a href="pyspark.html#cb5-6" tabindex="-1"></a>      .csv(data_path)</span>
-<span id="cb5-7"><a href="pyspark.html#cb5-7" tabindex="-1"></a><span class="co">#####################################################</span></span>
-<span id="cb5-8"><a href="pyspark.html#cb5-8" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;There are&quot;</span>, df_diabetes.count(), <span class="st">&quot;rows&quot;</span>, <span class="bu">len</span>(df_diabetes.columns),</span>
-<span id="cb5-9"><a href="pyspark.html#cb5-9" tabindex="-1"></a>      <span class="st">&quot;columns in the data.&quot;</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="pyspark.html#cb4-1" tabindex="-1"></a>data_path <span class="op">=</span> <span class="st">&#39;data/diabetes.csv&#39;</span></span>
+<span id="cb4-2"><a href="pyspark.html#cb4-2" tabindex="-1"></a>df_diabetes<span class="op">=</span>spark.read <span class="op">\</span></span>
+<span id="cb4-3"><a href="pyspark.html#cb4-3" tabindex="-1"></a>      .option(<span class="st">&quot;header&quot;</span>,<span class="st">&quot;True&quot;</span>)<span class="op">\</span></span>
+<span id="cb4-4"><a href="pyspark.html#cb4-4" tabindex="-1"></a>      .option(<span class="st">&quot;inferSchema&quot;</span>,<span class="st">&quot;True&quot;</span>)<span class="op">\</span></span>
+<span id="cb4-5"><a href="pyspark.html#cb4-5" tabindex="-1"></a>      .option(<span class="st">&quot;sep&quot;</span>,<span class="st">&quot;,&quot;</span>)<span class="op">\</span></span>
+<span id="cb4-6"><a href="pyspark.html#cb4-6" tabindex="-1"></a>      .csv(data_path)</span>
+<span id="cb4-7"><a href="pyspark.html#cb4-7" tabindex="-1"></a><span class="co">#####################################################</span></span>
+<span id="cb4-8"><a href="pyspark.html#cb4-8" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;There are&quot;</span>, df_diabetes.count(), <span class="st">&quot;rows&quot;</span>, <span class="bu">len</span>(df_diabetes.columns),</span>
+<span id="cb4-9"><a href="pyspark.html#cb4-9" tabindex="-1"></a>      <span class="st">&quot;columns in the data.&quot;</span>) </span></code></pre></div>
 <pre><code>## There are 768 rows 9 columns in the data.</code></pre>
-<div id="custom-correlation-method" class="section level4 hasAnchor" number="1.1.1.1">
-<h4><span class="header-section-number">1.1.1.1</span> Custom Correlation Method<a href="pyspark.html#custom-correlation-method" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="pyspark.html#cb7-1" tabindex="-1"></a><span class="kw">def</span> correlation_df(df, target_var, feature_cols, method):</span>
-<span id="cb7-2"><a href="pyspark.html#cb7-2" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="pyspark.html#cb7-3" tabindex="-1"></a>    <span class="im">from</span> pyspark.ml.feature <span class="im">import</span> VectorAssembler</span>
-<span id="cb7-4"><a href="pyspark.html#cb7-4" tabindex="-1"></a>    <span class="im">from</span> pyspark.ml.stat <span class="im">import</span> Correlation</span>
-<span id="cb7-5"><a href="pyspark.html#cb7-5" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="pyspark.html#cb7-6" tabindex="-1"></a>    <span class="co"># Assemble features into a vector</span></span>
-<span id="cb7-7"><a href="pyspark.html#cb7-7" tabindex="-1"></a>    target_var <span class="op">=</span> [target_var]</span>
-<span id="cb7-8"><a href="pyspark.html#cb7-8" tabindex="-1"></a>    feature_cols <span class="op">=</span> feature_cols</span>
-<span id="cb7-9"><a href="pyspark.html#cb7-9" tabindex="-1"></a>    df_cor <span class="op">=</span> df.select(target_var <span class="op">+</span> feature_cols)</span>
-<span id="cb7-10"><a href="pyspark.html#cb7-10" tabindex="-1"></a>    assembler <span class="op">=</span> VectorAssembler(inputCols<span class="op">=</span>target_var<span class="op">+</span>feature_cols, outputCol<span class="op">=</span><span class="st">&quot;features&quot;</span>)</span>
-<span id="cb7-11"><a href="pyspark.html#cb7-11" tabindex="-1"></a>    df_cor <span class="op">=</span> assembler.transform(df_cor)</span>
-<span id="cb7-12"><a href="pyspark.html#cb7-12" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="pyspark.html#cb7-13" tabindex="-1"></a>    <span class="co"># Calculate correlation matrix</span></span>
-<span id="cb7-14"><a href="pyspark.html#cb7-14" tabindex="-1"></a>    correlation_matrix <span class="op">=</span> Correlation.corr(df_cor, <span class="st">&quot;features&quot;</span>, method<span class="op">=</span>method).head()</span>
-<span id="cb7-15"><a href="pyspark.html#cb7-15" tabindex="-1"></a></span>
-<span id="cb7-16"><a href="pyspark.html#cb7-16" tabindex="-1"></a>    <span class="co"># Extract the correlation coefficient between target and each feature</span></span>
-<span id="cb7-17"><a href="pyspark.html#cb7-17" tabindex="-1"></a>    target_corr_list <span class="op">=</span> [correlation_matrix[<span class="dv">0</span>][i, <span class="dv">0</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(feature_cols)<span class="op">+</span><span class="dv">1</span>)][<span class="dv">1</span>:]</span>
-<span id="cb7-18"><a href="pyspark.html#cb7-18" tabindex="-1"></a></span>
-<span id="cb7-19"><a href="pyspark.html#cb7-19" tabindex="-1"></a>    <span class="co"># Create a DataFrame with target variable, feature names, and correlation coefficients</span></span>
-<span id="cb7-20"><a href="pyspark.html#cb7-20" tabindex="-1"></a>    correlation_data <span class="op">=</span> [(feature_cols[i], <span class="bu">float</span>(target_corr_list[i])) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(feature_cols))]</span>
-<span id="cb7-21"><a href="pyspark.html#cb7-21" tabindex="-1"></a></span>
-<span id="cb7-22"><a href="pyspark.html#cb7-22" tabindex="-1"></a>    correlation_df <span class="op">=</span> spark.createDataFrame(correlation_data, [<span class="st">&quot;feature&quot;</span>, <span class="st">&quot;correlation&quot;</span>])</span>
-<span id="cb7-23"><a href="pyspark.html#cb7-23" tabindex="-1"></a>    <span class="co"># Print the result</span></span>
-<span id="cb7-24"><a href="pyspark.html#cb7-24" tabindex="-1"></a>    <span class="cf">return</span> correlation_df</span></code></pre></div>
-<p>Lets print some selected columns.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="pyspark.html#cb8-1" tabindex="-1"></a>my_columns <span class="op">=</span> [<span class="st">&quot;Outcome&quot;</span>, <span class="st">&quot;Glucose&quot;</span>, <span class="st">&quot;BloodPressure&quot;</span>,<span class="st">&quot;BMI&quot;</span>]</span>
-<span id="cb8-2"><a href="pyspark.html#cb8-2" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="pyspark.html#cb8-3" tabindex="-1"></a>df_diabetes.select(my_columns).show(<span class="dv">4</span>)</span></code></pre></div>
+<p><strong>Exploring the Data</strong></p>
+<p>Before diving into correlation analysis, let’s take a quick look at the dataset:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="pyspark.html#cb6-1" tabindex="-1"></a>my_columns <span class="op">=</span> [<span class="st">&quot;Outcome&quot;</span>, <span class="st">&quot;Glucose&quot;</span>, <span class="st">&quot;BloodPressure&quot;</span>,<span class="st">&quot;BMI&quot;</span>]</span>
+<span id="cb6-2"><a href="pyspark.html#cb6-2" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="pyspark.html#cb6-3" tabindex="-1"></a>df_diabetes.select(my_columns).show(<span class="dv">5</span>)</span></code></pre></div>
 <pre><code>## +-------+-------+-------------+----+
 ## |Outcome|Glucose|BloodPressure| BMI|
 ## +-------+-------+-------------+----+
@@ -250,38 +224,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## |      0|     85|           66|26.6|
 ## |      1|    183|           64|23.3|
 ## |      0|     89|           66|28.1|
+## |      1|    137|           40|43.1|
 ## +-------+-------+-------------+----+
-## only showing top 4 rows</code></pre>
-<p><strong>Spearman Correlation</strong></p>
-<p>Spearman correlation, named after Charles Spearman, is a statistical measure that assesses the strength and direction of <code>monotonic</code> relationships between two variables. Unlike <code>Pearson</code> correlation, which measures linear relationships, Spearman correlation focuses on the <code>monotonicity</code> of the relationship, whether it is increasing or decreasing.</p>
-<p>Key points about <code>Spearman</code> correlation:</p>
-<ol style="list-style-type: decimal">
-<li><p><strong>Monotonic Relationship:</strong> Spearman correlation is based on the ranks of the data rather than the actual values. It looks at whether, when one variable increases, the other tends to also increase (and vice versa) in a monotonic fashion. It does not assume a linear relationship.</p></li>
-<li><p><strong>Ranking:</strong> The data for each variable is ranked, and the correlation is calculated based on the ranks. If the variables have a perfect <code>monotonic</code> relationship, the <code>Spearman</code> correlation will be 1. If one variable tends to increase as the other decreases, the correlation will be -1.
-Calculation: The Spearman correlation coefficient (<span class="math inline">\(\rho\)</span>) is calculated as follows:</p></li>
-</ol>
-<p><span class="math display">\[\rho = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}\]</span> where <span class="math inline">\(d_i\)</span> is the difference between the ranks of corresponding values for the two variables, and <span class="math inline">\(n\)</span> is the number of data points.</p>
-<ol start="3" style="list-style-type: decimal">
-<li><p><strong>Strength of Correlation:</strong> As with <code>Pearson</code> correlation, the absolute value of the <code>Spearman</code> correlation coefficient indicates the strength of the relationship. A coefficient close to 1 or -1 suggests a strong monotonic relationship, while a coefficient close to 0 suggests a weak or no monotonic relationship.</p></li>
-<li><p><strong>Use Cases:</strong> <code>Spearman</code> correlation is particularly useful when dealing with ordinal or ranked data, as it doesn’t rely on the assumption of normality. It’s commonly used in social sciences, finance, and any other fields where the relationship between variables might be nonlinear.</p></li>
-<li><p><strong>Ranking Ties:</strong> In cases where there are tied values (two or more identical values) in the data, special methods are used to handle ties in the ranking process.</p></li>
-<li><p><strong>Spearman correlation</strong> is a valuable tool when the assumptions of <code>linear</code> relationships are not met, or when dealing with data where the exact values are less important than their relative order. It provides a robust measure of association between variables without requiring a specific functional form for the relationship.</p></li>
-</ol>
-<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="pyspark.html#cb10-1" tabindex="-1"></a>target <span class="op">=</span> <span class="st">&#39;Outcome&#39;</span></span>
-<span id="cb10-2"><a href="pyspark.html#cb10-2" tabindex="-1"></a>inputs <span class="op">=</span> [<span class="st">&quot;Glucose&quot;</span>, <span class="st">&quot;BloodPressure&quot;</span>,<span class="st">&quot;BMI&quot;</span>]</span>
-<span id="cb10-3"><a href="pyspark.html#cb10-3" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="pyspark.html#cb10-4" tabindex="-1"></a>df <span class="op">=</span> correlation_df(df <span class="op">=</span> df_diabetes, </span>
-<span id="cb10-5"><a href="pyspark.html#cb10-5" tabindex="-1"></a>                    target_var <span class="op">=</span> target, </span>
-<span id="cb10-6"><a href="pyspark.html#cb10-6" tabindex="-1"></a>                    feature_cols <span class="op">=</span> inputs,</span>
-<span id="cb10-7"><a href="pyspark.html#cb10-7" tabindex="-1"></a>                    method <span class="op">=</span> <span class="st">&#39;spearman&#39;</span>)</span>
-<span id="cb10-8"><a href="pyspark.html#cb10-8" tabindex="-1"></a>df.show()</span></code></pre></div>
-<pre><code>## +-------------+-------------------+
-## |      feature|        correlation|
-## +-------------+-------------------+
-## |      Glucose|0.47577630645832697|
-## |BloodPressure| 0.1429206751899304|
-## |          BMI|0.30970674263113884|
-## +-------------+-------------------+</code></pre>
+## only showing top 5 rows</code></pre>
 <p><strong>Pearson Correlation</strong></p>
 <p><code>Pearson</code> correlation, named after Karl Pearson, is a statistical measure that quantifies the strength and direction of a linear relationship between two continuous variables. It assesses how well the relationship between the two variables can be described by a straight line. The Pearson correlation coefficient, often denoted by <span class="math inline">\(r\)</span>, ranges from -1 to 1, where:</p>
 <ul>
@@ -301,6 +246,114 @@ Calculation: The Spearman correlation coefficient (<span class="math inline">\(\
 <li><p><strong>Use Cases:</strong> Pearson correlation is widely used in various fields, including economics, biology, psychology, and many others, to analyze the degree and direction of association between two continuous variables.</p></li>
 </ol>
 <p>It’s important to note that while Pearson correlation is a powerful tool for linear relationships, it might not capture complex or nonlinear associations. In such cases, other correlation measures like Spearman correlation (for monotonic relationships) or more advanced techniques may be considered.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="pyspark.html#cb8-1" tabindex="-1"></a><span class="im">from</span> pyspark.ml.feature <span class="im">import</span> VectorAssembler</span>
+<span id="cb8-2"><a href="pyspark.html#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="pyspark.html#cb8-3" tabindex="-1"></a><span class="co"># Selecting relevant features</span></span>
+<span id="cb8-4"><a href="pyspark.html#cb8-4" tabindex="-1"></a>selected_features <span class="op">=</span> [<span class="st">&quot;Glucose&quot;</span>, <span class="st">&quot;BloodPressure&quot;</span>, <span class="st">&quot;BMI&quot;</span>]</span>
+<span id="cb8-5"><a href="pyspark.html#cb8-5" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="pyspark.html#cb8-6" tabindex="-1"></a><span class="co"># Assemble features into a vector</span></span>
+<span id="cb8-7"><a href="pyspark.html#cb8-7" tabindex="-1"></a>assembler <span class="op">=</span> VectorAssembler(inputCols<span class="op">=</span>selected_features, outputCol<span class="op">=</span><span class="st">&quot;features&quot;</span>)</span>
+<span id="cb8-8"><a href="pyspark.html#cb8-8" tabindex="-1"></a>df_diabetes_vectorized <span class="op">=</span> assembler.transform(df_diabetes.select(selected_features))</span></code></pre></div>
+<p>Calculate Correlation Coefficients</p>
+<p>Now, let’s calculate the Pearson correlation matrix using PySpark:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="pyspark.html#cb9-1" tabindex="-1"></a><span class="im">from</span> pyspark.ml.stat <span class="im">import</span> Correlation</span>
+<span id="cb9-2"><a href="pyspark.html#cb9-2" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="pyspark.html#cb9-3" tabindex="-1"></a><span class="co"># Calculate Pearson correlation matrix</span></span>
+<span id="cb9-4"><a href="pyspark.html#cb9-4" tabindex="-1"></a>pearson_corr_matrix <span class="op">=</span> Correlation.corr(df_diabetes_vectorized, </span>
+<span id="cb9-5"><a href="pyspark.html#cb9-5" tabindex="-1"></a>                                      <span class="st">&quot;features&quot;</span>, </span>
+<span id="cb9-6"><a href="pyspark.html#cb9-6" tabindex="-1"></a>                                      method<span class="op">=</span><span class="st">&quot;pearson&quot;</span>).head()</span>
+<span id="cb9-7"><a href="pyspark.html#cb9-7" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="pyspark.html#cb9-8" tabindex="-1"></a>pearson_corr_matrix</span></code></pre></div>
+<pre><code>## Row(pearson(features)=DenseMatrix(3, 3, [1.0, 0.1526, 0.2211, 0.1526, 1.0, 0.2818, 0.2211, 0.2818, 1.0], False))</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="pyspark.html#cb11-1" tabindex="-1"></a>Correlation.corr(df_diabetes_vectorized,</span>
+<span id="cb11-2"><a href="pyspark.html#cb11-2" tabindex="-1"></a>                <span class="st">&quot;features&quot;</span>, </span>
+<span id="cb11-3"><a href="pyspark.html#cb11-3" tabindex="-1"></a>                method<span class="op">=</span><span class="st">&quot;pearson&quot;</span>).head()[<span class="dv">0</span>]</span></code></pre></div>
+<pre><code>## DenseMatrix(3, 3, [1.0, 0.1526, 0.2211, 0.1526, 1.0, 0.2818, 0.2211, 0.2818, 1.0], False)</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="pyspark.html#cb13-1" tabindex="-1"></a><span class="co"># Extract the correlation matrix as a DenseMatrix</span></span>
+<span id="cb13-2"><a href="pyspark.html#cb13-2" tabindex="-1"></a>corr_values <span class="op">=</span> pearson_corr_matrix[<span class="dv">0</span>].toArray()</span>
+<span id="cb13-3"><a href="pyspark.html#cb13-3" tabindex="-1"></a>corr_values</span></code></pre></div>
+<pre><code>## array([[1.        , 0.15258959, 0.22107107],
+##        [0.15258959, 1.        , 0.28180529],
+##        [0.22107107, 0.28180529, 1.        ]])</code></pre>
+<p><strong>Spearman Correlation</strong></p>
+<p>Spearman correlation, named after Charles Spearman, is a statistical measure that assesses the strength and direction of <code>monotonic</code> relationships between two variables. Unlike <code>Pearson</code> correlation, which measures linear relationships, Spearman correlation focuses on the <code>monotonicity</code> of the relationship, whether it is increasing or decreasing.</p>
+<p>Key points about <code>Spearman</code> correlation:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Monotonic Relationship:</strong> Spearman correlation is based on the ranks of the data rather than the actual values. It looks at whether, when one variable increases, the other tends to also increase (and vice versa) in a monotonic fashion. It does not assume a linear relationship.</p></li>
+<li><p><strong>Ranking:</strong> The data for each variable is ranked, and the correlation is calculated based on the ranks. If the variables have a perfect <code>monotonic</code> relationship, the <code>Spearman</code> correlation will be 1. If one variable tends to increase as the other decreases, the correlation will be -1.
+Calculation: The Spearman correlation coefficient (<span class="math inline">\(\rho\)</span>) is calculated as follows:</p></li>
+</ol>
+<p><span class="math display">\[\rho = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}\]</span> where <span class="math inline">\(d_i\)</span> is the difference between the ranks of corresponding values for the two variables, and <span class="math inline">\(n\)</span> is the number of data points.</p>
+<ol start="3" style="list-style-type: decimal">
+<li><p><strong>Strength of Correlation:</strong> As with <code>Pearson</code> correlation, the absolute value of the <code>Spearman</code> correlation coefficient indicates the strength of the relationship. A coefficient close to 1 or -1 suggests a strong monotonic relationship, while a coefficient close to 0 suggests a weak or no monotonic relationship.</p></li>
+<li><p><strong>Use Cases:</strong> <code>Spearman</code> correlation is particularly useful when dealing with ordinal or ranked data, as it doesn’t rely on the assumption of normality. It’s commonly used in social sciences, finance, and any other fields where the relationship between variables might be nonlinear.</p></li>
+<li><p><strong>Ranking Ties:</strong> In cases where there are tied values (two or more identical values) in the data, special methods are used to handle ties in the ranking process.</p></li>
+<li><p><strong>Spearman correlation</strong> is a valuable tool when the assumptions of <code>linear</code> relationships are not met, or when dealing with data where the exact values are less important than their relative order. It provides a robust measure of association between variables without requiring a specific functional form for the relationship.</p></li>
+</ol>
+<div id="custom-correlation-method" class="section level4 hasAnchor" number="1.1.1.1">
+<h4><span class="header-section-number">1.1.1.1</span> Custom Correlation Method<a href="pyspark.html#custom-correlation-method" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="pyspark.html#cb15-1" tabindex="-1"></a><span class="kw">def</span> correlation_df(df, target_var, feature_cols, method):</span>
+<span id="cb15-2"><a href="pyspark.html#cb15-2" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="pyspark.html#cb15-3" tabindex="-1"></a>    <span class="im">from</span> pyspark.ml.feature <span class="im">import</span> VectorAssembler</span>
+<span id="cb15-4"><a href="pyspark.html#cb15-4" tabindex="-1"></a>    <span class="im">from</span> pyspark.ml.stat <span class="im">import</span> Correlation</span>
+<span id="cb15-5"><a href="pyspark.html#cb15-5" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="pyspark.html#cb15-6" tabindex="-1"></a>    <span class="co"># Assemble features into a vector</span></span>
+<span id="cb15-7"><a href="pyspark.html#cb15-7" tabindex="-1"></a>    target_var <span class="op">=</span> [target_var]</span>
+<span id="cb15-8"><a href="pyspark.html#cb15-8" tabindex="-1"></a>    feature_cols <span class="op">=</span> feature_cols</span>
+<span id="cb15-9"><a href="pyspark.html#cb15-9" tabindex="-1"></a>    df_cor <span class="op">=</span> df.select(target_var <span class="op">+</span> feature_cols)</span>
+<span id="cb15-10"><a href="pyspark.html#cb15-10" tabindex="-1"></a>    assembler <span class="op">=</span> VectorAssembler(inputCols<span class="op">=</span>target_var<span class="op">+</span>feature_cols, outputCol<span class="op">=</span><span class="st">&quot;features&quot;</span>)</span>
+<span id="cb15-11"><a href="pyspark.html#cb15-11" tabindex="-1"></a>    df_cor <span class="op">=</span> assembler.transform(df_cor)</span>
+<span id="cb15-12"><a href="pyspark.html#cb15-12" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="pyspark.html#cb15-13" tabindex="-1"></a>    <span class="co"># Calculate correlation matrix</span></span>
+<span id="cb15-14"><a href="pyspark.html#cb15-14" tabindex="-1"></a>    correlation_matrix <span class="op">=</span> Correlation.corr(df_cor, <span class="st">&quot;features&quot;</span>, method<span class="op">=</span>method).head()</span>
+<span id="cb15-15"><a href="pyspark.html#cb15-15" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="pyspark.html#cb15-16" tabindex="-1"></a>    <span class="co"># Extract the correlation coefficient between target and each feature</span></span>
+<span id="cb15-17"><a href="pyspark.html#cb15-17" tabindex="-1"></a>    target_corr_list <span class="op">=</span> [correlation_matrix[<span class="dv">0</span>][i, <span class="dv">0</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(feature_cols)<span class="op">+</span><span class="dv">1</span>)][<span class="dv">1</span>:]</span>
+<span id="cb15-18"><a href="pyspark.html#cb15-18" tabindex="-1"></a></span>
+<span id="cb15-19"><a href="pyspark.html#cb15-19" tabindex="-1"></a>    <span class="co"># Create a DataFrame with target variable, feature names, and correlation coefficients</span></span>
+<span id="cb15-20"><a href="pyspark.html#cb15-20" tabindex="-1"></a>    correlation_data <span class="op">=</span> [(feature_cols[i], <span class="bu">float</span>(target_corr_list[i])) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(feature_cols))]</span>
+<span id="cb15-21"><a href="pyspark.html#cb15-21" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="pyspark.html#cb15-22" tabindex="-1"></a>    correlation_df <span class="op">=</span> spark.createDataFrame(correlation_data, [<span class="st">&quot;feature&quot;</span>, <span class="st">&quot;correlation&quot;</span>])</span>
+<span id="cb15-23"><a href="pyspark.html#cb15-23" tabindex="-1"></a>    <span class="co"># Print the result</span></span>
+<span id="cb15-24"><a href="pyspark.html#cb15-24" tabindex="-1"></a>    <span class="cf">return</span> correlation_df</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="pyspark.html#cb16-1" tabindex="-1"></a>target <span class="op">=</span> <span class="st">&#39;Outcome&#39;</span></span>
+<span id="cb16-2"><a href="pyspark.html#cb16-2" tabindex="-1"></a>inputs <span class="op">=</span> [<span class="st">&quot;Glucose&quot;</span>, <span class="st">&quot;BloodPressure&quot;</span>,<span class="st">&quot;BMI&quot;</span>]</span>
+<span id="cb16-3"><a href="pyspark.html#cb16-3" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="pyspark.html#cb16-4" tabindex="-1"></a>df <span class="op">=</span> correlation_df(df <span class="op">=</span> df_diabetes, </span>
+<span id="cb16-5"><a href="pyspark.html#cb16-5" tabindex="-1"></a>                    target_var <span class="op">=</span> target, </span>
+<span id="cb16-6"><a href="pyspark.html#cb16-6" tabindex="-1"></a>                    feature_cols <span class="op">=</span> inputs,</span>
+<span id="cb16-7"><a href="pyspark.html#cb16-7" tabindex="-1"></a>                    method <span class="op">=</span> <span class="st">&#39;spearman&#39;</span>)</span>
+<span id="cb16-8"><a href="pyspark.html#cb16-8" tabindex="-1"></a>df.show()</span></code></pre></div>
+<pre><code>## +-------------+-------------------+
+## |      feature|        correlation|
+## +-------------+-------------------+
+## |      Glucose|0.47577630645832697|
+## |BloodPressure| 0.1429206751899304|
+## |          BMI|0.30970674263113884|
+## +-------------+-------------------+</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="pyspark.html#cb18-1" tabindex="-1"></a>target <span class="op">=</span> <span class="st">&#39;Outcome&#39;</span></span>
+<span id="cb18-2"><a href="pyspark.html#cb18-2" tabindex="-1"></a>inputs <span class="op">=</span> [<span class="st">&quot;Glucose&quot;</span>, <span class="st">&quot;BloodPressure&quot;</span>,<span class="st">&quot;BMI&quot;</span>]</span>
+<span id="cb18-3"><a href="pyspark.html#cb18-3" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="pyspark.html#cb18-4" tabindex="-1"></a>df_p <span class="op">=</span> correlation_df(df <span class="op">=</span> df_diabetes, </span>
+<span id="cb18-5"><a href="pyspark.html#cb18-5" tabindex="-1"></a>                    target_var <span class="op">=</span> target, </span>
+<span id="cb18-6"><a href="pyspark.html#cb18-6" tabindex="-1"></a>                    feature_cols <span class="op">=</span> inputs,</span>
+<span id="cb18-7"><a href="pyspark.html#cb18-7" tabindex="-1"></a>                    method <span class="op">=</span> <span class="st">&#39;pearson&#39;</span>)</span>
+<span id="cb18-8"><a href="pyspark.html#cb18-8" tabindex="-1"></a>                    </span>
+<span id="cb18-9"><a href="pyspark.html#cb18-9" tabindex="-1"></a>df_p.show()</span></code></pre></div>
+<pre><code>## +-------------+-------------------+
+## |      feature|        correlation|
+## +-------------+-------------------+
+## |      Glucose| 0.4665813983068757|
+## |BloodPressure| 0.0650683595503333|
+## |          BMI|0.29269466264444677|
+## +-------------+-------------------+</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb20-1"><a href="pyspark.html#cb20-1" tabindex="-1"></a><span class="co"># Convert Spark DataFrame to Pandas DataFrame and sort by &#39;cola&#39; in descending order</span></span>
+<span id="cb20-2"><a href="pyspark.html#cb20-2" tabindex="-1"></a>pandas_df <span class="op">=</span> df_p.toPandas().sort_values(by<span class="op">=</span><span class="st">&#39;correlation&#39;</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb20-3"><a href="pyspark.html#cb20-3" tabindex="-1"></a>pandas_df</span></code></pre></div>
+<pre><code>##          feature  correlation
+## 0        Glucose     0.466581
+## 2            BMI     0.292695
+## 1  BloodPressure     0.065068</code></pre>
 
 </div>
 </div>

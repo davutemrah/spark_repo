@@ -12,7 +12,7 @@ github-repo: rstudio/bookdown-demo
 description: "Here are some sample Spark codes"
 ---
 <style> 
-body {text-align: justify} 
+body {text-align: justify}
 </style>
 
 # Acknowledgement {-}
